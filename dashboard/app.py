@@ -109,11 +109,17 @@ h2 {
 # Load CSV data
 @st.cache_data
 def load_data():
-    devices = pd.read_csv("../data/devices_202507221557.csv")
-    vendors = pd.read_csv("../data/vendors_202507221557.csv")
-    compliance = pd.read_csv("../data/compliance_202507221557.csv")
-    device_usage = pd.read_csv("../data/device_usage_202507221557.csv")
-    recalls = pd.read_csv("../data/recalls_202507221557.csv")
+    import os
+    # Get the directory where this script is located
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # Go up one level to the project root, then into data folder
+    data_dir = os.path.join(os.path.dirname(current_dir), "data")
+    
+    devices = pd.read_csv(os.path.join(data_dir, "devices_202507221557.csv"))
+    vendors = pd.read_csv(os.path.join(data_dir, "vendors_202507221557.csv"))
+    compliance = pd.read_csv(os.path.join(data_dir, "compliance_202507221557.csv"))
+    device_usage = pd.read_csv(os.path.join(data_dir, "device_usage_202507221557.csv"))
+    recalls = pd.read_csv(os.path.join(data_dir, "recalls_202507221557.csv"))
     return devices, vendors, compliance, device_usage, recalls
 
 devices_df, vendors_df, compliance_df, device_usage_df, recalls_df = load_data()

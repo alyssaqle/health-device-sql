@@ -385,6 +385,6 @@ with bottom_right:
 # Attribution
 st.markdown("""
 <div style="text-align: center; margin-top: 2rem; padding: 1rem; color: #64748b; font-size: 0.9rem; border-top: 1px solid #334155;">
-    Created by <strong>Alyssa (Thuc Quyen) Le</strong> 💻
+    Created by <strong>Alyssa (Thuc Quyen) Le</strong> 
 </div>
 """, unsafe_allow_html=True)

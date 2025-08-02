@@ -6,102 +6,164 @@ import plotly.graph_objects as go
 
 st.set_page_config(layout="wide", page_title="Medical Device Dashboard")
 
-# Enhanced CSS with consistent dark theme throughout
+# Enhanced CSS with responsive design and consistent dark theme
 st.markdown("""
 <style>
+/* Base responsive container */
 .main .block-container {
-    padding: 0.25rem 0.75rem;
+    padding: 0.25rem 0.5rem;
     max-width: 100%;
-    height: 95vh;
+    min-height: 95vh;
     overflow-y: auto;
     background-color: #0f172a;
 }
 
-/* Dark container for visual components */
-.dark-container {
-    background-color: #0f172a;
-    border-radius: 12px;
-    padding: 0.75rem;
-    margin: 0.25rem 0;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+/* Responsive grid adjustments */
+@media (max-width: 768px) {
+    .main .block-container {
+        padding: 0.25rem 0.25rem;
+    }
 }
 
-/* Enhanced metric cards with dark theme */
+/* Enhanced metric cards with dark theme and responsive sizing */
 [data-testid="metric-container"] {
     background: #1e293b !important;
     border: 1px solid #334155 !important;
     border-radius: 8px;
-    padding: 0.6rem;
+    padding: 0.5rem;
     margin: 0.1rem;
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     color: white !important;
+    min-height: 80px;
 }
 
 [data-testid="metric-container"] label {
     color: #ccc !important;
+    font-size: 0.8rem !important;
 }
 
 [data-testid="metric-container"] [data-testid="metric-value"] {
     color: white !important;
+    font-size: 1.5rem !important;
 }
 
 [data-testid="metric-container"] [data-testid="metric-delta"] {
     color: #4CAF50 !important;
+    font-size: 0.8rem !important;
 }
 
-/* Clean headers */
+/* Responsive typography */
 h1 {
     color: white;
     text-align: center;
     margin-top: 1rem;
     margin-bottom: 1rem;
-    font-size: 1.8rem;
+    font-size: clamp(1.2rem, 4vw, 1.8rem);
 }
 
 h2 {
     color: white;
-    font-size: 1.1rem;
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
     margin-bottom: 0.5rem;
     font-weight: 600;
 }
 
-/* Dark dataframes */
+/* Responsive dataframes */
 .stDataFrame {
     border: 1px solid #334155;
     border-radius: 8px;
     background-color: #1e293b;
+    overflow-x: auto;
 }
 
 .stDataFrame table {
     background-color: #1e293b !important;
     color: white !important;
+    font-size: 0.8rem !important;
+    min-width: 100%;
 }
 
 .stDataFrame th {
     background-color: #0f172a !important;
     color: white !important;
     border-bottom: 1px solid #475569 !important;
+    font-size: 0.7rem !important;
+    padding: 0.3rem !important;
 }
 
 .stDataFrame td {
     background-color: #1e293b !important;
     color: white !important;
     border-bottom: 1px solid #444 !important;
+    font-size: 0.7rem !important;
+    padding: 0.3rem !important;
 }
 
-/* Reduce spacing */
+/* Responsive spacing */
 .element-container {
     margin-bottom: 0.15rem !important;
 }
 
-/* Remove extra padding from columns */
+/* Responsive column padding */
 .stColumn {
-    padding: 0.15rem !important;
+    padding: 0.1rem !important;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .stColumn {
+        padding: 0.05rem !important;
+    }
+    
+    [data-testid="metric-container"] {
+        padding: 0.3rem;
+        min-height: 70px;
+    }
+    
+    [data-testid="metric-container"] [data-testid="metric-value"] {
+        font-size: 1.2rem !important;
+    }
+    
+    .stDataFrame table {
+        font-size: 0.7rem !important;
+    }
+    
+    .stDataFrame th, .stDataFrame td {
+        font-size: 0.6rem !important;
+        padding: 0.2rem !important;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1rem;
+        margin: 0.5rem 0;
+    }
+    
+    [data-testid="metric-container"] {
+        min-height: 60px;
+        padding: 0.2rem;
+    }
+    
+    [data-testid="metric-container"] [data-testid="metric-value"] {
+        font-size: 1rem !important;
+    }
+    
+    [data-testid="metric-container"] label {
+        font-size: 0.7rem !important;
+    }
 }
 
 /* Dark theme for plotly charts */
 .js-plotly-plot {
     background-color: transparent !important;
+}
+
+/* Responsive plotly containers */
+.plotly-graph-div {
+    width: 100% !important;
+    height: auto !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -122,6 +184,10 @@ def load_data():
     recalls = pd.read_csv(os.path.join(data_dir, "recalls_202507221557.csv"))
     return devices, vendors, compliance, device_usage, recalls
 
+# Check if we're on mobile based on viewport width (approximation)
+def is_mobile_layout():
+    return st.session_state.get('mobile_layout', False)
+
 devices_df, vendors_df, compliance_df, device_usage_df, recalls_df = load_data()
 
 # Calculate metrics
@@ -137,32 +203,30 @@ total_sites = devices_df['site'].nunique()
 st.title("Medical IoT Devices Dashboard")
 
 # ──────────────────────────────────────────────────────────────
-# TOP ROW: KPI METRICS (6 Columns)
+# TOP ROW: KPI METRICS (Responsive Layout)
 # ──────────────────────────────────────────────────────────────
 # Calculate additional metrics
 new_devices = 205
 out_of_date_assets = 127
 
-# Create metrics in a single horizontal row
-metric_cols = st.columns(6)
+# Create responsive metrics layout
+# For large screens: 6 columns, for tablets: 3 columns (2 rows), for mobile: 2 columns (3 rows)
+metrics_data = [
+    ("Total Medical Devices", f"{total_devices:,}", "+1.7%"),
+    ("New Medical Devices", f"{new_devices:,}", None),
+    ("Total Vendors", f"{total_vendors:,}", None),
+    ("Devices with MDS2", f"{devices_with_mds2:,}", "+45%"),
+    ("Total Devices", f"{total_devices:,}", None),
+    ("Out-of-Date Assets", f"{out_of_date_assets:,}", None)
+]
 
-with metric_cols[0]:
-    st.metric("Total Medical Devices", f"{total_devices:,}", delta="+1.7%")
+# Create responsive metric layout
+col_count = 6  # Default for desktop
+metric_cols = st.columns(col_count)
 
-with metric_cols[1]:
-    st.metric("New Medical Devices", f"{new_devices:,}")
-
-with metric_cols[2]:
-    st.metric("Total Vendors", f"{total_vendors:,}")
-
-with metric_cols[3]:
-    st.metric("Devices with MDS2", f"{devices_with_mds2:,}", delta="+45%")
-
-with metric_cols[4]:
-    st.metric("Total Devices", f"{total_devices:,}")
-
-with metric_cols[5]:
-    st.metric("Out-of-Date Assets", f"{out_of_date_assets:,}")
+for i, (label, value, delta) in enumerate(metrics_data):
+    with metric_cols[i % col_count]:
+        st.metric(label, value, delta=delta)
 
 st.markdown('<hr style="margin: 0.5rem 0; border: none; border-top: 1px solid #475569; opacity: 0.5;">', unsafe_allow_html=True)
 
@@ -185,7 +249,7 @@ with middle_left:
     
     # Reorder columns to match reference: Risk Score, Category, Devices, % of Devices, Profiles
     df_cat = category_stats[['Risk Score', 'Category', 'Devices', '% of Devices', 'Profiles']].sort_values('Devices', ascending=False).head(6)
-    st.dataframe(df_cat, use_container_width=True, height=180)
+    st.dataframe(df_cat, use_container_width=True, height=160)
 
 with middle_right:
     st.markdown("**Medical Device Utilization by Category**")
@@ -234,25 +298,25 @@ with middle_right:
     
     fig.update_layout(
         barmode='stack',
-        height=200,
+        height=min(200, max(150, 25 * len(categories))),
         showlegend=True,
         legend=dict(
             orientation="h", 
             yanchor="bottom", 
-            y=-0.2, 
+            y=-0.3, 
             xanchor="center", 
             x=0.5,
-            bgcolor='#0f172a',
-            bordercolor='#475569',
+            bgcolor='rgba(0,0,0,0)',
+            bordercolor='rgba(128,128,128,0.3)',
             borderwidth=1,
-            font=dict(color='white')
+            font=dict(size=8)
         ),
-        margin=dict(l=2, r=2, t=2, b=30),
-        paper_bgcolor='#0f172a',
-        plot_bgcolor='#0f172a',
-        font=dict(color='white', size=9),
-        xaxis=dict(showgrid=True, gridcolor='#334155', color='white', title="Percentage"),
-        yaxis=dict(showgrid=False, color='white', categoryorder="total ascending")
+        margin=dict(l=2, r=2, t=2, b=40),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(size=8),
+        xaxis=dict(showgrid=True, gridcolor='rgba(128,128,128,0.2)', title="Percentage", title_font_size=8),
+        yaxis=dict(showgrid=False, categoryorder="total ascending", tickfont_size=8)
     )
     
     st.plotly_chart(fig, use_container_width=True)
@@ -278,7 +342,7 @@ with bottom_left:
     # Reorder columns: OS, Profiles, Devices, % of Total Devices
     df_eol = eol_summary[['OS', 'Profiles', 'Devices', '% of Total Devices']].sort_values('Devices', ascending=False).head(6)
     
-    st.dataframe(df_eol, use_container_width=True, height=180)
+    st.dataframe(df_eol, use_container_width=True, height=160)
 
 with bottom_right:
     st.markdown("**Compliance & Risk Metrics**")
@@ -301,7 +365,7 @@ with bottom_right:
             labels=['PHI Devices', 'Non-PHI'],
             values=[phi_percentage, 100-phi_percentage],
             hole=0.75,
-            marker_colors=['#FF6B35', '#334155'],
+            marker_colors=['#FF6B35', 'rgba(128,128,128,0.3)'],
             textinfo='none',
             hoverinfo='none',
             showlegend=False,
@@ -309,14 +373,14 @@ with bottom_right:
         )])
         
         fig_phi.update_layout(
-            height=130,
-            margin=dict(l=5, r=5, t=15, b=2),
-            paper_bgcolor='#0f172a',
-            plot_bgcolor='#0f172a',
+            height=120,
+            margin=dict(l=2, r=2, t=10, b=2),
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
             annotations=[
-                dict(text=f"<b>{phi_count:,}</b>", x=0.5, y=0.65, font_size=16, showarrow=False, font_color='white'),
-                dict(text=f"{phi_percentage}%", x=0.5, y=0.45, font_size=12, showarrow=False, font_color='#ccc'),
-                dict(text="PHI Devices", x=0.5, y=0.25, font_size=10, showarrow=False, font_color='#aaa')
+                dict(text=f"<b>{phi_count:,}</b>", x=0.5, y=0.65, font_size=14, showarrow=False),
+                dict(text=f"{phi_percentage}%", x=0.5, y=0.45, font_size=10, showarrow=False),
+                dict(text="PHI Devices", x=0.5, y=0.25, font_size=8, showarrow=False)
             ]
         )
         
@@ -328,7 +392,7 @@ with bottom_right:
             labels=['Unprotected', 'Protected'],
             values=[no_protect_percentage, 100-no_protect_percentage],
             hole=0.75,
-            marker_colors=['#FFB84D', '#334155'],
+            marker_colors=['#FFB84D', 'rgba(128,128,128,0.3)'],
             textinfo='none',
             hoverinfo='none',
             showlegend=False,
@@ -336,14 +400,14 @@ with bottom_right:
         )])
         
         fig_noprotect.update_layout(
-            height=130,
-            margin=dict(l=5, r=5, t=15, b=2),
-            paper_bgcolor='#0f172a',
-            plot_bgcolor='#0f172a',
+            height=120,
+            margin=dict(l=2, r=2, t=10, b=2),
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
             annotations=[
-                dict(text=f"<b>{no_protect:,}</b>", x=0.5, y=0.65, font_size=16, showarrow=False, font_color='white'),
-                dict(text=f"{no_protect_percentage}%", x=0.5, y=0.45, font_size=12, showarrow=False, font_color='#ccc'),
-                dict(text="No Protection", x=0.5, y=0.25, font_size=10, showarrow=False, font_color='#aaa')
+                dict(text=f"<b>{no_protect:,}</b>", x=0.5, y=0.65, font_size=14, showarrow=False),
+                dict(text=f"{no_protect_percentage}%", x=0.5, y=0.45, font_size=10, showarrow=False),
+                dict(text="No Protection", x=0.5, y=0.25, font_size=8, showarrow=False)
             ]
         )
         
@@ -357,7 +421,7 @@ with bottom_right:
             labels=['Recalls', 'Safe'],
             values=[recall_percentage, 100-recall_percentage],
             hole=0.75,
-            marker_colors=['#E74C3C', '#334155'],
+            marker_colors=['#E74C3C', 'rgba(128,128,128,0.3)'],
             textinfo='none',
             hoverinfo='none',
             showlegend=False,
@@ -365,14 +429,14 @@ with bottom_right:
         )])
         
         fig_recalls.update_layout(
-            height=130,
-            margin=dict(l=5, r=5, t=15, b=2),
-            paper_bgcolor='#0f172a',
-            plot_bgcolor='#0f172a',
+            height=120,
+            margin=dict(l=2, r=2, t=10, b=2),
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
             annotations=[
-                dict(text=f"<b>{recalls_count:,}</b>", x=0.5, y=0.65, font_size=16, showarrow=False, font_color='white'),
-                dict(text="Active", x=0.5, y=0.45, font_size=12, showarrow=False, font_color='#ccc'),
-                dict(text="FDA Recalls", x=0.5, y=0.25, font_size=10, showarrow=False, font_color='#aaa')
+                dict(text=f"<b>{recalls_count:,}</b>", x=0.5, y=0.65, font_size=14, showarrow=False),
+                dict(text="Active", x=0.5, y=0.45, font_size=10, showarrow=False),
+                dict(text="FDA Recalls", x=0.5, y=0.25, font_size=8, showarrow=False)
             ]
         )
         

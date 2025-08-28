@@ -2,14 +2,6 @@
 
 A comprehensive dashboard for monitoring medical IoT devices with compliance tracking, utilization metrics, and risk assessment.
 
-## Features
-
-- **Modern Dark Theme**: Professional slate color palette
-- **Real-time Metrics**: KPI cards with device counts and compliance stats
-- **Device Categories**: Risk scoring and utilization tracking
-- **Compliance Monitoring**: PHI devices, endpoint protection, FDA recalls
-- **Interactive Charts**: Plotly visualizations with donut charts and bar charts
-
 ## Quick Start
 
 ### Local Development
